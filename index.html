@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Foodify - Delicious Food Delivered</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg-secondary: #12121a;
+      --fg: #ffffff;
+      --muted: #8b8b9e;
+      --accent: #ff6b35;
+      --accent-light: #ff8c5a;
+      --card: #1a1a24;
+      --border: #2a2a38;
+      --success: #22c55e;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* Background Pattern */
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    .bg-pattern::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(circle, rgba(255, 107, 53, 0.15) 0%, transparent 70%);
+      filter: blur(80px);
+    }
+
+    .bg-pattern::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(circle, rgba(255, 140, 90, 0.1) 0%, transparent 70%);
+      filter: blur(60px);
+    }
+
+    /* Grid Pattern */
+    .grid-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      background-image: 
+        linear-gradient(rgba(255, 107, 53, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 107, 53, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 4px;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.7;
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .animate-fade-in-up {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .animate-slide-in-left {
+      animation: slideInLeft 0.6s ease-out forwards;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Card Styles */
+    .food-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .food-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--accent);
+      box-shadow: 0 20px 40px rgba(255, 107, 53, 0.15);
+    }
+
+    .food-card img {
+      transition: transform 0.5s ease;
+    }
+
+    .food-card:hover img {
+      transform: scale(1.1);
+    }
+
+    /* Category Pills */
+    .category-pill {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 12px 24px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .category-pill:hover,
+    .category-pill.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: scale(1.05);
+    }
+
+    /* Button Styles */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(255, 107, 53, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--border);
+      color: var(--fg);
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Search Box */
+    .search-box {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+    }
+
+    /* Badge */
+    .badge {
+      background: var(--accent);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Rating Stars */
+    .rating {
+      color: #fbbf24;
+    }
+
+    /* Navigation */
+    .nav-link {
+      position: relative;
+      color: var(--muted);
+      transition: color 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover {
+      color: var(--fg);
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    /* Mobile Menu */
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: var(--bg);
+      z-index: 100;
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+    }
+
+    .mobile-menu.active {
+      transform: translateX(0);
+    }
+
+    /* Cart Badge */
+    .cart-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: var(--accent);
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    /* Promo Banner */
+    .promo-banner {
+      background: linear-gradient(135deg, var(--accent) 0%, #ff8c5a 50%, #ffa07a 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .promo-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 60%;
+      height: 200%;
+      background: rgba(255, 255, 255, 0.1);
+      transform: rotate(30deg);
+    }
+
+    /* Restaurant Card */
+    .restaurant-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .restaurant-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 107, 53, 0.5);
+    }
+
+    /* Focus States */
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Input Styles */
+    input {
+      background: transparent;
+      border: none;
+      outline: none;
+    }
+
+    /* Stats Counter */
+    .stat-number {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    @media (max-width: 768px) {
+      .stat-number {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Elements -->
+  <div class="bg-pattern"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="flex flex-col h-full p-6">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl font-bold" style="font-family: 'Space Grotesk';">Foodify</h2>
+        <button id="closeMenu" class="p-2" aria-label="Close menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <nav class="flex flex-col gap-6 text-lg">
+        <a href="#" class="nav-link">Home</a>
+        <a href="#restaurants" class="nav-link">Restaurants</a>
+        <a href="#menu" class="nav-link">Menu</a>
+        <a href="#deals" class="nav-link">Deals</a>
+        <a href="#" class="nav-link">About</a>
+      </nav>
+      <div class="mt-auto">
+        <button class="btn-primary w-full">Sign In</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="header">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <span class="text-xl font-bold" style="font-family: 'Space Grotesk';">Foodify</span>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="#" class="nav-link">Home</a>
+          <a href="#restaurants" class="nav-link">Restaurants</a>
+          <a href="#menu" class="nav-link">Menu</a>
+          <a href="#deals" class="nav-link">Deals</a>
+        </nav>
+
+        <!-- Right Actions -->
+        <div class="flex items-center gap-4">
+          <!-- Location -->
+          <button class="hidden sm:flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>New York, NY</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          <!-- Cart -->
+          <button class="relative p-2 hover:bg-white/5 rounded-xl transition-colors" aria-label="Shopping cart">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="21" r="1"/>
+              <circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            <span class="cart-badge" id="cartCount">3</span>
+          </button>
+
+          <!-- Sign In -->
+          <button class="btn-primary hidden sm:block">Sign In</button>
+
+          <!-- Mobile Menu Toggle -->
+          <button class="md:hidden p-2" id="menuToggle" aria-label="Open menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="relative z-10">
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <!-- Left Content -->
+          <div class="animate-fade-in-up">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6">
+              <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <span class="text-sm text-gray-400">Free delivery on first order</span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6" style="font-family: 'Space Grotesk';">
+              Delicious Food
+              <br>
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-400">
+                Delivered Fast
+              </span>
+            </h1>
+            <p class="text-lg text-gray-400 mb-8 max-w-md">
+              Order from the best local restaurants with easy, on-demand delivery. Fresh food, fast delivery, amazing taste.
+            </p>
+
+            <!-- Search Box -->
+            <div class="search-box flex items-center gap-3 p-2 mb-6">
+              <div class="flex items-center gap-3 flex-1 px-4">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b8b9e" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input 
+                  type="text" 
+                  placeholder="Search for restaurants, cuisines..." 
+                  class="flex-1 py-3 text-white placeholder-gray-500"
+                  aria-label="Search restaurants"
+                >
+              </div>
+              <button class="btn-primary px-6 py-3">Find Food</button>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="flex flex-wrap gap-3">
+              <span class="text-sm text-gray-500">Popular:</span>
+              <button class="text-sm text-gray-400 hover:text-orange-500 transition-colors">Pizza</button>
+              <button class="text-sm text-gray-400 hover:text-orange-500 transition-colors">Burger</button>
+              <button class="text-sm text-gray-400 hover:text-orange-500 transition-colors">Sushi</button>
+              <button class="text-sm text-gray-400 hover:text-orange-500 transition-colors">Chinese</button>
+            </div>
+          </div>
+
+          <!-- Right Content - Hero Image -->
+          <div class="relative animate-slide-in-left hidden lg:block">
+            <div class="relative z-10">
+              <img 
+                src="./cca00bfa-2e81-4fc5-9553-fbdfb2d4fbf7_removalai_preview (2).png" 
+                alt="Delicious pizza" 
+                class="rounded-3xl shadow-2xl"
+                style="animation: float 4s ease-in-out infinite;"
+              >
+            </div>
+            <!-- Floating Cards -->
+            <div class="absolute z-12 -left-8 top-1/4 bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-4 shadow-xl" style="animation: float 4s ease-in-out infinite; animation-delay: 0.5s;">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold">Order Confirmed</p>
+                  <p class="text-xs text-gray-400">2 mins ago</p>
+                </div>
+              </div>
+            </div>
+            <div class="absolute -right-4 bottom-1/4 bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-4 shadow-xl" style="animation: float 4s ease-in-out infinite; animation-delay: 1s;">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff6b35" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold">Fast Delivery</p>
+                  <p class="text-xs text-gray-400">25-30 mins</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-12 px-4 sm:px-6 lg:px-8 border-y border-white/5">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div class="text-center reveal">
+            <p class="stat-number">500+</p>
+            <p class="text-gray-400 mt-2">Restaurants</p>
+          </div>
+          <div class="text-center reveal" style="transition-delay: 0.1s;">
+            <p class="stat-number">15K+</p>
+            <p class="text-gray-400 mt-2">Happy Customers</p>
+          </div>
+          <div class="text-center reveal" style="transition-delay: 0.2s;">
+            <p class="stat-number">50+</p>
+            <p class="text-gray-400 mt-2">Cuisines</p>
+          </div>
+          <div class="text-center reveal" style="transition-delay: 0.3s;">
+            <p class="stat-number">4.9</p>
+            <p class="text-gray-400 mt-2">App Rating</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8" id="menu">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12 reveal">
+          <h2 class="text-3xl sm:text-4xl font-bold mb-4" style="font-family: 'Space Grotesk';">
+            Explore Categories
+          </h2>
+          <p class="text-gray-400 max-w-md mx-auto">
+            Choose from a variety of cuisines and find your perfect meal
+          </p>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-4 mb-12" id="categoryTabs">
+          <button class="category-pill active" data-category="all">
+            <span class="flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              All
+            </span>
+          </button>
+          <button class="category-pill" data-category="pizza">
+            <span class="flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 12h20L12 2z"/>
+              </svg>
+              Pizza
+            </span>
+          </button>
+          <button class="category-pill" data-category="burger">
+            <span class="flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 15h16M4 19h16M6 11h12l-2-8H8z"/>
+              </svg>
+              Burgers
+            </span>
+          </button>
+          <button class="category-pill" data-category="sushi">
+            <span class="flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M8 12h8"/>
+              </svg>
+              Sushi
+            </span>
+          </button>
+          <button class="category-pill" data-category="chinese">
+            <span class="flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M2 12h20"/>
+              </svg>
+              Chinese
+            </span>
+          </button>
+          <button class="category-pill" data-category="dessert">
+            <span class="flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a10 10 0 0 1 10 10c0 5-10 10-10 10S2 17 2 12A10 10 0 0 1 12 2z"/>
+              </svg>
+              Desserts
+            </span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Popular Dishes Section -->
+    <section class="py-12 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8 reveal">
+          <h2 class="text-2xl sm:text-3xl font-bold" style="font-family: 'Space Grotesk';">
+            Popular Dishes
+          </h2>
+          <button class="btn-secondary hidden sm:block">View All</button>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" id="dishesGrid">
+          <!-- Dishes will be rendered here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Promo Banner -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8" id="deals">
+      <div class="max-w-7xl mx-auto">
+        <div class="promo-banner rounded-3xl p-8 sm:p-12 reveal">
+          <div class="relative z-10 max-w-xl">
+            <span class="badge mb-4 inline-block">Limited Time</span>
+            <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4" style="font-family: 'Space Grotesk';">
+              Get 50% Off Your First Order
+            </h2>
+            <p class="text-white/80 mb-6">
+              Use code WELCOME50 at checkout. Valid for new customers only.
+            </p>
+            <button class="bg-white text-orange-600 font-semibold px-8 py-4 rounded-xl hover:bg-gray-100 transition-colors">
+              Order Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Restaurants Section -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8" id="restaurants">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-8 reveal">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-bold mb-2" style="font-family: 'Space Grotesk';">
+              Top Restaurants
+            </h2>
+            <p class="text-gray-400">Discover the best restaurants near you</p>
+          </div>
+          <button class="btn-secondary hidden sm:block">See All</button>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="restaurantsGrid">
+          <!-- Restaurants will be rendered here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-12 reveal">
+          <h2 class="text-3xl sm:text-4xl font-bold mb-4" style="font-family: 'Space Grotesk';">
+            How It Works
+          </h2>
+          <p class="text-gray-400 max-w-md mx-auto">
+            Getting your favorite food delivered is easy
+          </p>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-8">
+          <div class="text-center reveal" style="transition-delay: 0.1s;">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/20 flex items-center justify-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b35" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-3" style="font-family: 'Space Grotesk';">Find Restaurant</h3>
+            <p class="text-gray-400">Browse through hundreds of restaurants and cuisines near you</p>
+          </div>
+
+          <div class="text-center reveal" style="transition-delay: 0.2s;">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/20 flex items-center justify-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b35" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-3" style="font-family: 'Space Grotesk';">Choose Your Meal</h3>
+            <p class="text-gray-400">Pick your favorite dishes and customize your order</p>
+          </div>
+
+          <div class="text-center reveal" style="transition-delay: 0.3s;">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/20 flex items-center justify-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff6b35" stroke-width="2">
+                <rect x="1" y="3" width="15" height="13"/>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/>
+                <circle cx="18.5" cy="18.5" r="2.5"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-3" style="font-family: 'Space Grotesk';">Fast Delivery</h3>
+            <p class="text-gray-400">Get your food delivered to your door in minutes</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- App Download Section -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl border border-white/10 overflow-hidden reveal">
+          <div class="grid lg:grid-cols-2 gap-8 items-center">
+            <div class="p-8 sm:p-12">
+              <h2 class="text-3xl sm:text-4xl font-bold mb-4" style="font-family: 'Space Grotesk';">
+                Download Our App
+              </h2>
+              <p class="text-gray-400 mb-6">
+                Get exclusive deals and track your order in real-time. Available on iOS and Android.
+              </p>
+              <div class="flex flex-wrap gap-4">
+                <button class="flex items-center gap-3 bg-white/10 border border-white/10 rounded-xl px-6 py-3 hover:bg-white/20 transition-colors">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                  </svg>
+                  <div class="text-left">
+                    <p class="text-xs text-gray-400">Download on the</p>
+                    <p class="font-semibold">App Store</p>
+                  </div>
+                </button>
+                <button class="flex items-center gap-3 bg-white/10 border border-white/10 rounded-xl px-6 py-3 hover:bg-white/20 transition-colors">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L15.206 12l2.492-2.491zM5.864 2.658L16.8 8.99l-2.302 2.302-8.634-8.634z"/>
+                  </svg>
+                  <div class="text-left">
+                    <p class="text-xs text-gray-400">Get it on</p>
+                    <p class="font-semibold">Google Play</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div class="hidden lg:block relative h-80">
+              <div class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-transparent"></div>
+              <img 
+                src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=600&fit=crop" 
+                alt="Mobile app" 
+                class="h-full w-full object-cover"
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 py-12 px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <span class="text-xl font-bold" style="font-family: 'Space Grotesk';">Foodify</span>
+          </div>
+          <p class="text-gray-400 text-sm mb-4">
+            Delicious food delivered to your doorstep. Fast, fresh, and always satisfying.
+          </p>
+          <div class="flex gap-4">
+            <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Facebook">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+              </svg>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Twitter">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
+              </svg>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-bold mb-4" style="font-family: 'Space Grotesk';">Company</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">About Us</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Careers</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Blog</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Press</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold mb-4" style="font-family: 'Space Grotesk';">Support</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Help Center</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Safety</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold mb-4" style="font-family: 'Space Grotesk';">Contact</h4>
+          <ul class="space-y-2">
+            <li class="flex items-center gap-2 text-gray-400 text-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              +1 (555) 123-4567
+            </li>
+            <li class="flex items-center gap-2 text-gray-400 text-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              codewithabdullahnadeem@gmail.com
+
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-white/5 pt-8 text-center">
+        <p class="text-gray-500 text-sm">
+         © 2026 Design by Abdullah Nadeem
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Data
+    const dishes = [
+      {
+        id: 1,
+        name: 'Margherita Pizza',
+        restaurant: 'Pizza Palace',
+        price: 14.99,
+        rating: 4.8,
+        reviews: 234,
+        image: 'https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=400&h=300&fit=crop',
+        category: 'pizza',
+        badge: 'Bestseller'
+      },
+      {
+        id: 2,
+        name: 'Classic Cheeseburger',
+        restaurant: 'Burger Barn',
+        price: 11.99,
+        rating: 4.6,
+        reviews: 189,
+        image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
+        category: 'burger',
+        badge: null
+      },
+      {
+        id: 3,
+        name: 'Salmon Sushi Roll',
+        restaurant: 'Sakura Sushi',
+        price: 18.99,
+        rating: 4.9,
+        reviews: 312,
+        image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop',
+        category: 'sushi',
+        badge: 'Premium'
+      },
+      {
+        id: 4,
+        name: 'Kung Pao Chicken',
+        restaurant: 'Golden Dragon',
+        price: 13.99,
+        rating: 4.7,
+        reviews: 156,
+        image: 'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400&h=300&fit=crop',
+        category: 'chinese',
+        badge: null
+      },
+      {
+        id: 5,
+        name: 'Chocolate Lava Cake',
+        restaurant: 'Sweet Treats',
+        price: 8.99,
+        rating: 4.9,
+        reviews: 278,
+        image: 'https://images.unsplash.com/photo-1624353365286-3f8d62daad51?w=400&h=300&fit=crop',
+        category: 'dessert',
+        badge: 'New'
+      },
+      {
+        id: 6,
+        name: 'Pepperoni Pizza',
+        restaurant: 'Pizza Palace',
+        price: 16.99,
+        rating: 4.7,
+        reviews: 198,
+        image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=400&h=300&fit=crop',
+        category: 'pizza',
+        badge: null
+      },
+      {
+        id: 7,
+        name: 'Double Bacon Burger',
+        restaurant: 'Burger Barn',
+        price: 14.99,
+        rating: 4.8,
+        reviews: 245,
+        image: 'https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=400&h=300&fit=crop',
+        category: 'burger',
+        badge: 'Popular'
+      },
+      {
+        id: 8,
+        name: 'Dragon Roll',
+        restaurant: 'Sakura Sushi',
+        price: 22.99,
+        rating: 4.9,
+        reviews: 167,
+        image: 'https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?w=400&h=300&fit=crop',
+        category: 'sushi',
+        badge: null
+      }
+    ];
+
+    const restaurants = [
+      {
+        id: 1,
+        name: 'Pizza Palace',
+        cuisine: 'Italian, Pizza',
+        rating: 4.8,
+        deliveryTime: '25-35',
+        deliveryFee: 'Free',
+        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop',
+        featured: true
+      },
+      {
+        id: 2,
+        name: 'Sakura Sushi',
+        cuisine: 'Japanese, Sushi',
+        rating: 4.9,
+        deliveryTime: '30-40',
+        deliveryFee: '$2.99',
+        image: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&h=400&fit=crop',
+        featured: true
+      },
+      {
+        id: 3,
+        name: 'Burger Barn',
+        cuisine: 'American, Burgers',
+        rating: 4.7,
+        deliveryTime: '20-30',
+        deliveryFee: 'Free',
+        image: 'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=600&h=400&fit=crop',
+        featured: false
+      },
+      {
+        id: 4,
+        name: 'Golden Dragon',
+        cuisine: 'Chinese, Asian',
+        rating: 4.6,
+        deliveryTime: '35-45',
+        deliveryFee: '$1.99',
+        image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop',
+        featured: false
+      },
+      {
+        id: 5,
+        name: 'Taco Fiesta',
+        cuisine: 'Mexican, Tacos',
+        rating: 4.5,
+        deliveryTime: '25-35',
+        deliveryFee: 'Free',
+        image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&h=400&fit=crop',
+        featured: true
+      },
+      {
+        id: 6,
+        name: 'Sweet Treats',
+        cuisine: 'Desserts, Bakery',
+        rating: 4.9,
+        deliveryTime: '20-30',
+        deliveryFee: '$1.49',
+        image: 'https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=600&h=400&fit=crop',
+        featured: false
+      }
+    ];
+
+    // DOM Elements - Initialize after defining data
+    const dishesGrid = document.getElementById('dishesGrid');
+    const restaurantsGrid = document.getElementById('restaurantsGrid');
+    const categoryTabs = document.getElementById('categoryTabs');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuToggle = document.getElementById('menuToggle');
+    const closeMenu = document.getElementById('closeMenu');
+    const header = document.getElementById('header');
+
+    // Render Functions
+    function renderDishes(filter = 'all') {
+      const filteredDishes = filter === 'all' 
+        ? dishes 
+        : dishes.filter(dish => dish.category === filter);
+      
+      dishesGrid.innerHTML = filteredDishes.map((dish, index) => `
+        <div class="food-card reveal" style="transition-delay: ${index * 0.1}s;">
+          <div class="relative h-48 overflow-hidden">
+            <img src="${dish.image}" alt="${dish.name}" class="w-full h-full object-cover">
+            ${dish.badge ? `<span class="absolute top-3 left-3 badge">${dish.badge}</span>` : ''}
+            <button class="absolute top-3 right-3 w-10 h-10 rounded-full bg-white/10 backdrop-blur-lg border border-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" aria-label="Add to favorites">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-lg mb-1" style="font-family: 'Space Grotesk';">${dish.name}</h3>
+            <p class="text-gray-400 text-sm mb-3">${dish.restaurant}</p>
+            <div class="flex items-center justify-between">
+              <span class="text-xl font-bold text-orange-500">$${dish.price.toFixed(2)}</span>
+              <div class="flex items-center gap-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <span class="text-sm font-medium">${dish.rating}</span>
+                <span class="text-xs text-gray-400">(${dish.reviews})</span>
+              </div>
+            </div>
+            <button class="w-full mt-4 py-3 rounded-xl bg-white/5 border border-white/10 font-medium hover:bg-orange-500 hover:border-orange-500 transition-all add-to-cart" data-name="${dish.name}">
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      // Re-observe new elements
+      observeElements();
+      setupAddToCart();
+    }
+
+    function renderRestaurants() {
+      restaurantsGrid.innerHTML = restaurants.map((restaurant, index) => `
+        <div class="restaurant-card reveal" style="transition-delay: ${index * 0.1}s;">
+          <div class="relative h-44 overflow-hidden">
+            <img src="${restaurant.image}" alt="${restaurant.name}" class="w-full h-full object-cover">
+            ${restaurant.featured ? `<span class="absolute top-3 left-3 badge">Featured</span>` : ''}
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-lg mb-1" style="font-family: 'Space Grotesk';">${restaurant.name}</h3>
+            <p class="text-gray-400 text-sm mb-3">${restaurant.cuisine}</p>
+            <div class="flex items-center gap-4 text-sm">
+              <div class="flex items-center gap-1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <span class="font-medium">${restaurant.rating}</span>
+              </div>
+              <div class="flex items-center gap-1 text-gray-400">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>${restaurant.deliveryTime} min</span>
+              </div>
+              <span class="${restaurant.deliveryFee === 'Free' ? 'text-green-500' : 'text-gray-400'}">${restaurant.deliveryFee} delivery</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      observeElements();
+    }
+
+    // Interactions
+    function setupCategoryTabs() {
+      const tabs = categoryTabs.querySelectorAll('.category-pill');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          renderDishes(tab.dataset.category);
+        });
+      });
+    }
+
+    function setupMobileMenu() {
+      menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+
+      closeMenu.addEventListener('click', () => {
+        mobileMenu.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+    }
+
+    function setupHeaderScroll() {
+      let lastScroll = 0;
+      window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset;
+        
+        if (currentScroll > 50) {
+          header.style.background = 'rgba(10, 10, 15, 0.9)';
+          header.style.backdropFilter = 'blur(20px)';
+          header.style.borderBottom = '1px solid rgba(255, 255, 255, 0.05)';
+        } else {
+          header.style.background = 'transparent';
+          header.style.backdropFilter = 'none';
+          header.style.borderBottom = 'none';
+        }
+
+        lastScroll = currentScroll;
+      });
+    }
+
+    let cartCount = 3;
+    function setupAddToCart() {
+      const buttons = document.querySelectorAll('.add-to-cart');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          cartCount++;
+          document.getElementById('cartCount').textContent = cartCount;
+          
+          // Button feedback
+          const originalText = btn.textContent;
+          btn.textContent = 'Added!';
+          btn.style.background = '#22c55e';
+          btn.style.borderColor = '#22c55e';
+          
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = '';
+            btn.style.borderColor = '';
+          }, 1500);
+        });
+      });
+    }
+
+    // Scroll Reveal
+    function observeElements() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      document.querySelectorAll('.reveal').forEach(el => {
+        observer.observe(el);
+      });
+    }
+
+    // Initialize
+    function init() {
+      renderDishes();
+      renderRestaurants();
+      setupCategoryTabs();
+      setupMobileMenu();
+      setupHeaderScroll();
+      observeElements();
+    }
+
+    // Run initialization
+    init();
+  </script>
+</body>
+</html>
